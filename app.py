@@ -166,12 +166,7 @@ def process_file(task_id, filepath):
                 else:
                     text = str(count)
                 counts.append(text)
-                
-                # --- FIX START: UNCOMMENTED LOGGING ---
-                # This keeps the stream alive during long loops
-                push_log(task_id, f"[{datetime.now().strftime('%H:%M:%S')}] [ {time_str} ] -> {text}") 
-                # --- FIX END ---
-                
+                push_log(task_id, f"[{datetime.now().strftime('%H:%M:%S')}] [ {time_str} ] -> {text}")
             final_data[f"Count ({report_date})"] = counts
             date_to_counts[str(report_date)] = counts
 
@@ -209,14 +204,19 @@ INDEX_HTML = """
   <title>Webinar Attendee Counter</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
+    /* New light, clean design:
+       - Removes black background / green accents
+       - Uses Poppins for modern rounded look
+       - Removes the status explanatory paragraph as requested
+    */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
     :root{
       --page-bg: #f6f8fb;
       --card-bg: #ffffff;
       --muted: #6b7280;
-      --accent: #0b6ef6;
-      --accent-2: #ff7a59;
+      --accent: #0b6ef6; /* primary blue accent */
+      --accent-2: #ff7a59; /* secondary warm accent for small highlights */
       --border: rgba(12, 20, 35, 0.06);
       --shadow: 0 10px 30px rgba(12, 20, 35, 0.06);
       --pill-bg: rgba(11,110,246,0.08);
@@ -226,14 +226,20 @@ INDEX_HTML = """
     body{ margin:0; background: linear-gradient(180deg, var(--page-bg) 0%, #ffffff 100%); font-family:Poppins,Inter,system-ui,Arial; color:#0b1220; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
     .wrap{ max-width:1100px; margin:30px auto; padding:24px; }
 
+    /* Header / hero */
     .hero{ display:flex; gap:20px; align-items:center; justify-content:space-between; margin-bottom:18px; }
-    .brand{ display:flex; gap:14px; align-items:center; }
-    .logo{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),#2aa7ff); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; box-shadow: 0 8px 22px rgba(11,110,246,0.12); }
+    .brand{
+      display:flex; gap:14px; align-items:center;
+    }
+    .logo{
+      width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,var(--accent),#2aa7ff); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; box-shadow: 0 8px 22px rgba(11,110,246,0.12);
+    }
     .title-block .title{ font-size:22px; font-weight:700; margin:0; color:#071227; letter-spacing:0.2px; }
     .title-block .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
 
     .controls{ display:flex; gap:12px; align-items:center; }
 
+    /* Upload button (pill) */
     .btn{
       background: linear-gradient(90deg, var(--accent), #2aa7ff);
       color: #ffffff; border: none; padding:10px 16px; border-radius:999px; cursor:pointer; font-weight:700;
@@ -241,9 +247,10 @@ INDEX_HTML = """
     }
     .btn.alt{
       background: transparent; border:1px solid var(--border); color:var(--accent);
-      padding:8px 14px; border-radius:10px; font-weight:600; box-shadow:none;
+      padding:8px 14px; border-radius:10px; font-weight:600;
     }
 
+    /* page grid */
     .grid{ display:grid; grid-template-columns: 1fr 420px; gap:18px; align-items:start; }
     @media (max-width: 980px){
       .grid{ grid-template-columns: 1fr; }
@@ -251,26 +258,14 @@ INDEX_HTML = """
 
     .card{ background:var(--card-bg); padding:16px; border-radius:12px; border:1px solid var(--border); box-shadow: var(--shadow); }
 
+    /* Status card simplified (paragraph removed per request) */
     .status-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-    .status-pill{ background: var(--pill-bg); padding:8px 12px; border-radius:999px; color:var(--accent); font-weight:700; border:1px solid rgba(11,110,246,0.12); }
+    .status-pill{
+      background: var(--pill-bg); padding:8px 12px; border-radius:999px; color:var(--accent); font-weight:700; border:1px solid rgba(11,110,246,0.12);
+    }
     .status-label{ font-weight:700; color:#071227; }
 
-    /* Log Box Styles */
-    #logOutput {
-        margin-top: 12px;
-        background: #fbfdff;
-        border: 1px solid rgba(12,20,35,0.06);
-        border-radius: 8px;
-        padding: 10px;
-        max-height: 200px;
-        overflow-y: auto;
-        font-family: monospace;
-        font-size: 12px;
-        color: #444;
-        display: none; /* hidden until started */
-    }
-    .log-line { margin-bottom: 4px; border-bottom: 1px dashed #eee; padding-bottom:2px; }
-
+    /* Results table */
     .table{ margin-top:8px; border-radius:10px; padding:10px; }
     table{ width:100%; border-collapse:collapse; }
     td{ padding:10px 12px; border-bottom:1px solid rgba(12,20,35,0.04); font-size:15px; color:#0b1220; }
@@ -279,9 +274,11 @@ INDEX_HTML = """
 
     .toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
     .copybtn{ background:transparent; color:var(--accent); padding:8px 12px; border-radius:8px; border:1px solid var(--border); cursor:pointer; font-weight:700; display:inline-flex; gap:8px; align-items:center; }
+
+    /* Download link */
     a.dl{ color:var(--accent); font-weight:700; text-decoration:none; }
 
-    /* Settings Modal */
+    /* Settings modal (keeps same structure but light) */
     .modal-backdrop{ position:fixed; inset:0; background:rgba(12,20,35,0.35); display:none; align-items:center; justify-content:center; z-index:999; }
     .modal{ width:920px; max-width:94%; background:var(--card-bg); padding:18px; border-radius:12px; border:1px solid var(--border); box-shadow: 0 30px 80px rgba(12,20,35,0.12); }
     .modal h3{ margin:0 0 8px 0; color:#071227; font-size:18px; }
@@ -292,6 +289,7 @@ INDEX_HTML = """
     .remove-btn{ background:#fff; color:#ef4444; border:1px solid rgba(12,20,35,0.04); padding:6px 8px; border-radius:8px; cursor:pointer; font-weight:700; }
 
     .add-row{ display:flex; gap:8px; margin-top:8px; }
+
     .save { background: var(--accent); color: #ffffff; border: none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:800; }
     .close-btn { background:transparent; color:var(--muted); border:1px solid var(--border); padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700; }
 
@@ -310,22 +308,22 @@ INDEX_HTML = """
       </div>
 
       <div class="controls">
-        <button class="btn" id="uploadTriggerBtn">📁 Upload & Start</button>
-        <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" style="display:none"/>
-        
+        <label class="btn" id="uploadBtn">📁 Upload & Start
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" style="display:none"/>
+        </label>
         <button class="btn alt" id="openSettings" title="Settings ⚙️">⚙️ Settings</button>
       </div>
     </div>
 
     <div class="grid">
+      <!-- Left: main card (upload + results) -->
       <div>
         <div class="card">
           <div class="status-row">
             <div class="status-label">Status</div>
             <div class="status-pill" id="status">Idle</div>
           </div>
-          
-          <div id="logOutput"></div>
+          <!-- explanatory paragraph removed per your request -->
 
           <div style="display:flex; justify-content:flex-end; margin-top:12px;">
             <div id="downloadZone"></div>
@@ -348,6 +346,7 @@ INDEX_HTML = """
         </div>
       </div>
 
+      <!-- Right column: small card with quick actions / info -->
       <div>
         <div class="card" style="display:flex; flex-direction:column; gap:10px;">
           <div style="font-weight:700; font-size:15px;">Quick actions</div>
@@ -367,6 +366,7 @@ INDEX_HTML = """
     <footer>Part by Quantum Leap Solutions</footer>
   </div>
 
+  <!-- Settings Modal -->
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal" role="dialog" aria-modal="true">
       <h3>Settings — Timeline & Annotations</h3>
@@ -398,14 +398,15 @@ INDEX_HTML = """
   </div>
 
 <script>
+/* Front-end JS preserved from original (only minimal additions for new UI) */
+
 const fileInput = document.getElementById('fileInput');
-const uploadTriggerBtn = document.getElementById('uploadTriggerBtn');
+const uploadBtn = document.getElementById('uploadBtn');
 const statusEl = document.getElementById('status');
 const resultTable = document.getElementById('resultTable');
 const downloadLink = document.getElementById('downloadLink');
 const downloadZone = document.getElementById('downloadZone');
 const copyBtn = document.getElementById('copyBtn');
-const logOutput = document.getElementById('logOutput');
 
 const modalBackdrop = document.getElementById('modalBackdrop');
 const openSettings = document.getElementById('openSettings');
@@ -424,7 +425,9 @@ const clearBtn = document.getElementById('clearBtn');
 const timelinePreview = document.getElementById('timelinePreview');
 
 let es = null;
+let lastTaskId = null;
 
+// small helper to update timeline preview
 function updateTimelinePreview(){
   fetch('/settings').then(r=>r.json()).then(data=>{
     const t = data.timeline || [];
@@ -433,60 +436,33 @@ function updateTimelinePreview(){
 }
 updateTimelinePreview();
 
-// Log helper
-function addLog(msg){
-  const div = document.createElement('div');
-  div.className = 'log-line';
-  div.textContent = msg;
-  logOutput.appendChild(div);
-  logOutput.scrollTop = logOutput.scrollHeight;
-}
-
-// 1. Separate click handler to prevent double-open bubbles
-uploadTriggerBtn.addEventListener('click', () => {
-    // Reset value so 'change' triggers even if same file selected
-    fileInput.value = '';
-    fileInput.click();
-});
-
 fileInput.addEventListener('change', async function(){
   const file = this.files[0];
   if(!file) return;
-  
   // clear previous
   resultTable.innerHTML = '';
   downloadZone.innerHTML = '';
   downloadLink.style.display = 'none';
   statusEl.textContent = 'Uploading...';
-  
-  // Show log area and clear it
-  logOutput.style.display = 'block';
-  logOutput.innerHTML = '';
-  addLog("🚀 Uploading file...");
 
   const fd = new FormData();
   fd.append('file', file);
   try {
     const res = await fetch('/upload', { method: 'POST', body: fd });
     const j = await res.json();
-    if(j.error){ 
-        statusEl.textContent='Error'; 
-        addLog('❌ Upload error: ' + j.error);
-        alert('Upload error: ' + j.error); 
-        return; 
-    }
-    
+    if(j.error){ statusEl.textContent='Error'; alert('Upload error: ' + j.error); return; }
     const taskId = j.task_id;
+    lastTaskId = taskId;
     statusEl.textContent = 'Processing...';
 
-    // start SSE
+    // start SSE (hidden log streaming) — we only react to DONE/FAILED
     if(es){ try{ es.close(); }catch(e){} }
     es = new EventSource('/stream/' + taskId);
     es.onmessage = function(evt){
       const text = evt.data;
+      // we don't show system logs in UI, only change status on DONE/FAILED
       if(text === 'DONE'){
         statusEl.textContent = 'Completed';
-        addLog("✅ DONE. Fetching results...");
         fetch('/result/' + taskId).then(r=>r.json()).then(data=>{
           if(data.rows){
             populateTable(data.rows);
@@ -500,25 +476,19 @@ fileInput.addEventListener('change', async function(){
           }
         });
         es.close();
-      } else if(text === 'FAILED'){
+      }
+      if(text === 'FAILED'){
         statusEl.textContent = 'Failed';
-        addLog("❌ FAILED. Check server logs or file format.");
         es.close();
-        alert('Processing failed. Check log box for details.');
-      } else {
-        // --- FIX START: SHOW LOGS ---
-        addLog(text);
-        // --- FIX END ---
+        alert('Processing failed. Check the file format and required columns (Join Time, Leave Time).');
       }
     };
     es.onerror = function(e){
-      // --- FIX START: HANDLE DROP ---
-      addLog("⚠️ SSE connection lost. Trying to continue...");
-      // --- FIX END ---
+      // keep UI simple: if SSE connection errors, set Idle but allow result fetch later
+      statusEl.textContent = 'Idle';
     };
   } catch(err){
     statusEl.textContent = 'Error';
-    addLog('❌ Upload failed: ' + err);
     alert('Upload failed: ' + err);
   }
 });
@@ -534,6 +504,7 @@ function populateTable(rows){
   });
 }
 
+// Copy both columns as TSV (no header)
 copyBtn.addEventListener('click', function(){
   const rows = Array.from(document.querySelectorAll('#resultTable tr'));
   if(rows.length === 0){ alert('No results to copy'); return; }
@@ -550,20 +521,23 @@ copyBtn.addEventListener('click', function(){
   }, ()=> alert('Copy failed — try manually selecting the table.'));
 });
 
-copyAllBtn.addEventListener('click', ()=>{ copyBtn.click(); });
+// Quick actions (right column)
+copyAllBtn.addEventListener('click', ()=>{
+  copyBtn.click();
+});
 clearBtn.addEventListener('click', ()=>{
   resultTable.innerHTML = '';
   downloadLink.style.display = 'none';
   downloadZone.innerHTML = '';
   statusEl.textContent = 'Idle';
-  logOutput.style.display = 'none';
 });
 
-// Settings Modal
+// Settings modal behavior
 openSettings.addEventListener('click', openSettingsModal);
 closeModal.addEventListener('click', () => modalBackdrop.style.display = 'none');
 
 function openSettingsModal(){
+  // fetch current settings from server
   fetch('/settings').then(r=>r.json()).then(data=>{
     const timeline = data.timeline || [];
     const annotations = data.annotations || {};
@@ -575,21 +549,28 @@ function openSettingsModal(){
 
 function renderTimelineList(timeline){
   timelineList.innerHTML = '';
+  // Sort times
   const sorted = timeline.slice().sort();
   sorted.forEach(t=>{
     const div = document.createElement('div');
     div.className = 'list-item';
     const input = document.createElement('input');
-    input.type = 'text'; input.value = t; input.style.width = '120px';
+    input.type = 'text';
+    input.value = t;
+    input.style.width = '120px';
     input.addEventListener('blur', ()=> {
+      // basic validation on blur; if invalid, highlight red briefly
       if(!/^([01]\\d|2[0-3]):([0-5]\\d)$/.test(input.value.trim())){
         input.style.border = '1px solid #ff6b6b';
         setTimeout(()=> input.style.border = 'none', 1200);
       }
     });
-    const rem = document.createElement('button'); rem.textContent = 'Remove'; rem.className = 'remove-btn';
+    const rem = document.createElement('button');
+    rem.textContent = 'Remove';
+    rem.className = 'remove-btn';
     rem.onclick = ()=> div.remove();
-    div.appendChild(input); div.appendChild(rem);
+    div.appendChild(input);
+    div.appendChild(rem);
     timelineList.appendChild(div);
   });
 }
@@ -601,10 +582,16 @@ function renderAnnotationsList(annotations){
     const div = document.createElement('div');
     div.className = 'list-item';
     const kInput = document.createElement('input');
-    kInput.type = 'text'; kInput.value = k; kInput.style.width = '100px';
+    kInput.type = 'text';
+    kInput.value = k;
+    kInput.style.width = '100px';
     const vInput = document.createElement('input');
-    vInput.type = 'text'; vInput.value = annotations[k]; vInput.style.flex = '1';
-    const rem = document.createElement('button'); rem.textContent = 'Remove'; rem.className = 'remove-btn';
+    vInput.type = 'text';
+    vInput.value = annotations[k];
+    vInput.style.flex = '1';
+    const rem = document.createElement('button');
+    rem.textContent = 'Remove';
+    rem.className = 'remove-btn';
     rem.onclick = ()=> div.remove();
     div.appendChild(kInput); div.appendChild(vInput); div.appendChild(rem);
     annotationsList.appendChild(div);
@@ -614,12 +601,19 @@ function renderAnnotationsList(annotations){
 addTimeBtn.addEventListener('click', ()=>{
   const t = newTime.value.trim();
   if(!t) return;
-  if(!/^([01]\\d|2[0-3]):([0-5]\\d)$/.test(t)){ alert('Enter time in HH:MM (24h) format'); return; }
+  if(!/^([01]\\d|2[0-3]):([0-5]\\d)$/.test(t)){
+    alert('Enter time in HH:MM (24h) format');
+    return;
+  }
   const div = document.createElement('div');
   div.className = 'list-item';
   const input = document.createElement('input');
-  input.type = 'text'; input.value = t; input.style.width = '120px';
-  const rem = document.createElement('button'); rem.textContent = 'Remove'; rem.className = 'remove-btn';
+  input.type = 'text';
+  input.value = t;
+  input.style.width = '120px';
+  const rem = document.createElement('button');
+  rem.textContent = 'Remove';
+  rem.className = 'remove-btn';
   rem.onclick = ()=> div.remove();
   div.appendChild(input); div.appendChild(rem);
   timelineList.appendChild(div);
@@ -645,6 +639,7 @@ addAnnBtn.addEventListener('click', ()=>{
 });
 
 saveSettings.addEventListener('click', ()=>{
+  // gather timeline from timelineList inputs
   const items = Array.from(timelineList.querySelectorAll('.list-item'));
   const times = [];
   items.forEach(div=>{
@@ -654,8 +649,10 @@ saveSettings.addEventListener('click', ()=>{
       if(/^([01]\\d|2[0-3]):([0-5]\\d)$/.test(v)) times.push(v);
     }
   });
+  // dedupe & sort
   const uniqueSorted = Array.from(new Set(times)).sort();
 
+  // gather annotations
   const annDivs = Array.from(annotationsList.querySelectorAll('.list-item'));
   const anns = {};
   annDivs.forEach(div=>{
@@ -667,6 +664,7 @@ saveSettings.addEventListener('click', ()=>{
     }
   });
 
+  // Send to server
   fetch('/save_settings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -677,9 +675,15 @@ saveSettings.addEventListener('click', ()=>{
       setTimeout(()=> statusEl.textContent = 'Idle', 1200);
       modalBackdrop.style.display = 'none';
       updateTimelinePreview();
-    } else { alert('Failed to save settings.'); }
-  }).catch(err=>{ alert('Failed to save settings: ' + err); });
+    } else {
+      alert('Failed to save settings.');
+    }
+  }).catch(err=>{
+    alert('Failed to save settings: ' + err);
+  });
 });
+
+/* Initialize nothing else on load; settings are loaded when modal opens */
 </script>
 </body>
 </html>
@@ -702,10 +706,12 @@ def upload():
         path = os.path.join(app.config["UPLOAD_FOLDER"], save_name)
         file.save(path)
 
+        # create task queue and id
         task_id = uuid.uuid4().hex
         q = Queue()
         TASK_QUEUES[task_id] = q
 
+        # start processing in background
         thread = threading.Thread(target=process_file, args=(task_id, path), daemon=True)
         thread.start()
 
@@ -742,6 +748,7 @@ def result(task_id):
 def download(filename):
     return send_from_directory(app.config["OUTPUT_FOLDER"], filename, as_attachment=True)
 
+# Settings endpoints
 @app.route("/settings", methods=["GET"])
 def get_settings():
     return jsonify({
@@ -754,7 +761,9 @@ def save_settings():
     payload = request.get_json() or {}
     tl = payload.get("timeline")
     anns = payload.get("annotations")
+    # Basic validation
     if isinstance(tl, list):
+        # validate times format HH:MM
         good = []
         for t in tl:
             t = t.strip()
@@ -763,8 +772,10 @@ def save_settings():
                 good.append(t)
             except:
                 continue
+        # sort and set
         CURRENT_SETTINGS["timeline"] = sorted(list(dict.fromkeys(good)))
     if isinstance(anns, dict):
+        # keep only valid HH:MM keys
         good_ann = {}
         for k, v in anns.items():
             k2 = k.strip()
@@ -778,5 +789,6 @@ def save_settings():
     return jsonify({"ok": True})
 
 if __name__ == "__main__":
+    # Use PORT env var for local testing; production will use gunicorn
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
