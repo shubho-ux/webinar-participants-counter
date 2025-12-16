@@ -166,8 +166,12 @@ def process_file(task_id, filepath):
                 else:
                     text = str(count)
                 counts.append(text)
-                # push_log(task_id, f"[{datetime.now().strftime('%H:%M:%S')}] [ {time_str} ] -> {text}") 
-                # Reduced logging verbosity for loop
+                
+                # --- FIX START: UNCOMMENTED LOGGING ---
+                # This keeps the stream alive during long loops
+                push_log(task_id, f"[{datetime.now().strftime('%H:%M:%S')}] [ {time_str} ] -> {text}") 
+                # --- FIX END ---
+                
             final_data[f"Count ({report_date})"] = counts
             date_to_counts[str(report_date)] = counts
 
@@ -502,15 +506,15 @@ fileInput.addEventListener('change', async function(){
         es.close();
         alert('Processing failed. Check log box for details.');
       } else {
-        // 2. Display the logs that were previously hidden
+        // --- FIX START: SHOW LOGS ---
         addLog(text);
+        // --- FIX END ---
       }
     };
     es.onerror = function(e){
-      // Connection issue (or closed)
-      if(statusEl.textContent === 'Processing...') {
-         // addLog("⚠️ Stream connection lost.");
-      }
+      // --- FIX START: HANDLE DROP ---
+      addLog("⚠️ SSE connection lost. Trying to continue...");
+      // --- FIX END ---
     };
   } catch(err){
     statusEl.textContent = 'Error';
