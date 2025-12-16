@@ -437,7 +437,7 @@ function updateTimelinePreview(){
 updateTimelinePreview();
 
 // open file dialog on clicking label
-uploadBtn.addEventListener('click', () => fileInput.click());
+// uploadBtn.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', async function(){
   const file = this.files[0];
